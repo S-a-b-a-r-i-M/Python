@@ -1,0 +1,9 @@
+#print() TO PRINT OUTPUT
+print("hello tech universe")
+
+name = "sabari"
+print("My name is:",name) #WE USE COMMA TO SEPERATE STRINGS AND VARIABLES
+
+#-> SINGLE LINE COMMENT
+'''MULTI LINE COMMENT'''
+"""THIS IS ALSOEXAMPLE FOR MULTI LINE COMMENT"""
