@@ -32,3 +32,40 @@ for num in range(2,end):
         print(num,"is a prime")
 '''
 
+#NESTED LOOP
+'''
+n=int(input("Enter n value:"))
+
+print("Left angle triangle")
+for i in range(1,n+1):    #LEFT ANGLE TRIANGLE
+    for j in range(1,i+1):
+        print(j,end=" ")
+    print()
+
+print("\nRight angle triangle")
+for i in range(1,n+1):  #RIGHT ANGLE TRIANGLE
+    for j in range(1,(n+1)-i):
+        print(end="  ")
+    for k in range(1,i+1):
+        print(k,end=" ")
+    print()
+'''
+
+
+#BREAK AND CONTINUE
+for i in range(1,20):
+    if i==10:
+        break
+    print(i,end=" ")
+else:                   #ELSE IS NOT WORK WHILE USING BREAK 
+    print("end of the loop")
+print("\n")
+
+name="sa b*ar,i-"
+cleanedName=""
+for ch in name:
+    if not ch.isalpha():
+        continue
+    cleanedName+=ch
+
+print("Cleaned Name:",cleanedName)
