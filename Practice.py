@@ -41,3 +41,8 @@ subjects[2].append('bus_maths')
 print("2D list:",subjects[2],"1D list:",com)
 
 #IF WE WANT TO COPY 2D LIST WE HAVE TO USE DEEP COPY
+
+
+# PRINT ACSII VALUES
+for i in str:
+    print(i,ord(i))

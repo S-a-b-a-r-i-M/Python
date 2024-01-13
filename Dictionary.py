@@ -1,4 +1,5 @@
-#DICTIONAY{}
+# DICTIONAY{}
+'''
 user1={'name':'sabari','age':21,'profession':"SDE",'log-in':True,'hobbi':['palying','learning']}
 print(user1)
 
@@ -30,3 +31,26 @@ print("All users list :",users)
 user4={'name':'arasu','age':21,'profession':"SDE",'hobbi':['playing','reading','cycling']}
 print(user4)
 print(type(user4['hobbi']),user4['hobbi'])
+
+# CONTAINS
+print(user4.__contains__('name'))
+print(user4.__contains__('arasu'))
+
+print(user4.get('name'))
+
+# DELETE AN ENTRY
+practice2(user4.pop('name'))
+'''
+
+# COMPREHENSION
+hero_names = ['Iron Man', 'Captain America', 'Thor', 'Hulk', 'Black Widow']
+org_names = ['Tony Stark', 'Steve Rogers', 'Thor', ' Bruce Banner', 'Natasha Romanoff']
+
+# my_dict = {}
+# for key,value in zip(hero_names, org_names):
+#     my_dict[key]= value
+my_dict = {key : value for key, value in zip(hero_names,org_names)}
+print('my_dict :', my_dict)
+
+my_dict = {key : value for key, value in zip(hero_names,org_names) if key != 'Hulk'}
+print('my_dict :', my_dict)

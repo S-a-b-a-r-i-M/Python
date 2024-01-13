@@ -24,3 +24,4 @@ if 'mon' in days:
    print(True) 
 
 print('mon' not in days)
+

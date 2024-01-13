@@ -1,4 +1,4 @@
-#LIST
+# LIST
 '''
 names=["sabari","arasu","tamil","george","ureka"]
 ages=[21,20,21,24,25]
@@ -37,4 +37,16 @@ print("first 3 naems and 3 ages",names[:3],ages[:3])
 
 '''
 
-#TUPLE
+# LIST COMPREHENSIONS
+nums = [1, 2, 3, 4, 5]
+reverse_nums = [n for n in nums[::-1]] # [start:end:step]
+print('reverse_nums :', reverse_nums)
+
+# list_of_tuples = []
+# for letter in 'abcd':
+#     list_of_tuples+=[(letter, n) for n in range(1,5)]
+list_of_tuples = [(letter, n) for n in range(1,5) for letter in 'abcd'] # EXECUTION GOES FROM LEFT TO RIGHT
+
+print('list_of_tuples :', list_of_tuples)
+
+
