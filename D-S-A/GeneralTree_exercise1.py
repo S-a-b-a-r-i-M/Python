@@ -47,8 +47,11 @@ def build_tree():
     antro.add_child([sabari])
     elsin.add_child([tamil])
 
+    print("full tree----->")
     root.show_tree('both')
+    print("\n\nname only----->")
     root.show_tree('name')
+    print("\n\ndesignation only----->")
     root.show_tree('des')
 
 
