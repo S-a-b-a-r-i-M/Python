@@ -3,7 +3,7 @@ from time import perf_counter
 
 from random import randint
 
-from http_req_sync_async import http_get_sync, http_get_async
+from HTTP_req_sync_async import http_get_sync, http_get_async
 
 # INTRO 
 async def dog():
