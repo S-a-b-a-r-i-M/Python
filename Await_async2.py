@@ -2,6 +2,7 @@ import asyncio
 from time import perf_counter
 
 from random import randint
+from typing import AsyncIterable
 
 from HTTP_req_sync_async import http_get_sync, http_get_async
 
@@ -40,18 +41,34 @@ async def get_pokemon_name_async():
     res = await http_get_async(poke_url)
     return str(res['name'])
 
+async def next_pokemon_name(total: int) -> AsyncIterable[str]:
+    for _ in range(total):
+        name = await get_pokemon_name_async()
+        yield name
+
 
 async def main():
+    # synchronous method 
     start_time = perf_counter()
-    for _ in range(20):
-        id = randint(1,MAX_POKEMON)
+    for _ in range(10):
         poke_name = get_pokemon_name_sync()
         print(poke_name)
-    print('Time taken by sync program : ', perf_counter() - start_time)
+    print(f'Time taken by synchronous program : {perf_counter() - start_time :.2f} seconds')
 
+    # asynchronous method using asyncio.gather
+    """
+    asyncio.gather function is used to concurrently execute multiple coroutine objects (async operations) and gather their results. 
+    By passing the list of coroutine objects as arguments using the * operator, asyncio.gather schedules them to run concurrently.
+    """
     start_time = perf_counter()
-    poke_names = await asyncio.gather(get_pokemon_name_async() for _ in range(20))
+    poke_names = await asyncio.gather(*[get_pokemon_name_async() for _ in range(10)])
     print(poke_names)
-    print('Time taken by async program : ', perf_counter() - start_time)
+    print(f'Time taken by async program (gather): {perf_counter() - start_time :.2f} seconds')
+
+    # asynchronous method using async generator
+    ''' start_time = perf_counter()
+    async for name in next_pokemon_name(10):
+        print(name)
+    print(f'Time taken by async program (generator): {perf_counter() - start_time :.2f} seconds')'''
 
 asyncio.run(main())
