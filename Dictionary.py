@@ -54,3 +54,16 @@ print('my_dict :', my_dict)
 
 my_dict = {key : value for key, value in zip(hero_names,org_names) if key != 'Hulk'}
 print('my_dict :', my_dict)
+
+
+# To check if multiple keys exist in a dictionary, we can use the all() function
+exp = {"designation": 123, "years": 3}
+  # method 1
+keyset = {'designation','years'}
+print('all keys are present') if keyset.issubset(exp.keys()) else print('not all keys are present')
+
+  # method 2
+if all(key in exp for key in ["designation", "years"]):
+    print('all keys are present')
+else:
+    print('not all keys are present')
