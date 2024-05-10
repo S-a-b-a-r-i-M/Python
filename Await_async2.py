@@ -61,6 +61,7 @@ async def main():
     By passing the list of coroutine objects as arguments using the * operator, asyncio.gather schedules them to run concurrently.
     """
     start_time = perf_counter()
+    # The * operator is known as the "unpacking" operator or the "star" operator
     poke_names = await asyncio.gather(*[get_pokemon_name_async() for _ in range(10)])
     print(poke_names)
     print(f'Time taken by async program (gather): {perf_counter() - start_time :.2f} seconds')

@@ -1,6 +1,8 @@
 import requests
 
 
+# response.raise_for_status()
+
 class ContactOutApi:
     def __init__(self, api_token: str = ""):
         self.url = "https://api.contactout.com/v1/people/linkedin?profile="

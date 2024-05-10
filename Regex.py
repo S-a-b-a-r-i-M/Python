@@ -87,7 +87,7 @@ matches = re.findall(r'%([^%]+)%', string)
 print(matches, type(matches))
 '''
 
-def check_gmail(text) -> bool:
+'''def check_gmail(text) -> bool:
     # create a regex to validate an Email
     gmail_regex = re.compile(r"^[a-zA-Z0-9_.+-]+@gmail\.com$")
     # Check if the email matches the regex
@@ -111,4 +111,29 @@ print(is_valid_mail("sabari@Hire10x.ai"))
 print(is_valid_mail("valid@example.com"))
 print(is_valid_mail("inval@id@example.com"))
 print(is_valid_mail("@gmail.com"))
-print(is_valid_mail("@gmailcom"))
+print(is_valid_mail("@gmailcom"))'''
+
+
+################################
+### EXTRACTING NAME FROM URL ###
+################################
+urls = [
+    "",
+    "https://www.bmwmotorcycles.com/en/public-pool/cont...",
+    "https://www.billjacobsbmw.com/",
+    "https://www.bmwrochester.com/",
+    "https://www.bmwdtla.com/",
+    "https://www.faulknerbmw.com/",
+    "https://www.stevenscreekbmw.com/",
+    "https://www.patrickbmw.com/",
+    "https://www.fieldsbmwnorthfield.com/",
+    "https://www.bmw.com/en/index.html"
+]
+
+business_names = []
+for url in urls:
+    match = re.search(r'(?<=www\.)(.*?)(?=\.)', url)
+    if match:
+        business_names.append(match.group(0))
+
+print(business_names)
