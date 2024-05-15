@@ -62,7 +62,7 @@ async def main():
     """
     start_time = perf_counter()
     # The * operator is known as the "unpacking" operator or the "star" operator
-    poke_names = await asyncio.gather(*[get_pokemon_name_async() for _ in range(10)])
+    poke_names = await asyncio.gather(*[get_pokemon_name_async() for _ in range(15)])
     print(poke_names)
     print(f'Time taken by async program (gather): {perf_counter() - start_time :.2f} seconds')
 
