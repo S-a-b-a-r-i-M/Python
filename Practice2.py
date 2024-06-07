@@ -88,3 +88,119 @@ while True:
     print("Approximate Square root of {} is {}".format(num, ans))
     print("Number of iteration :", count,"\n")
 '''
+
+# Online Python - IDE, Editor, Compiler, Interpreter
+from datetime import datetime
+import re
+def calculate_duration(start_date, end_date):
+        try:
+            try:
+                pattern = "%b %Y"
+                start_date = datetime.strptime(start_date, pattern)
+            except ValueError:
+                pattern = "%m/%Y"
+                start_date = datetime.strptime(start_date, pattern)
+
+            # if end_date is not in the expected format then take the current date as end_date
+            if not (re.findall(r'\d{4}',end_date)): 
+                end_date = datetime.now()
+            else:
+                end_date = datetime.strptime(end_date, pattern)
+
+            # Calculate the difference in years and months
+            total_months = (end_date.year - start_date.year) * 12 + (
+                end_date.month - start_date.month
+            )
+            years = total_months // 12
+            months = total_months % 12
+
+            # Construct the formatted output
+            year_suffix = "years" if (years > 1) else "year"
+            month_suffix = "months" if (months > 1) else "month"
+
+            if years==0 and months==0:
+                return f"0 month"
+            elif not months:
+                return f"{years} {year_suffix}"
+            elif not years:
+                return f"{months} {month_suffix}"
+            else:
+                return f"{years} {year_suffix} {months} {month_suffix}"
+                
+            
+        except Exception as e:
+            return None
+            
+# print(calculate_duration("09/2014", "12/2017"))
+
+def calculate_exp(text) -> float:
+        """
+        Calculate the total experience based on the provided text.
+
+        Parameters:
+            text (str): The text containing the work experience information.
+
+        Returns:
+            float: The total experience calculated from the text.
+
+        Example:
+            >>> WorkExperienceRepo().calculate_exp("2 years 6 months")
+            2.5
+
+            >>> WorkExperienceRepo().calculate_exp("1 year")
+            1.0
+
+            >>> WorkExperienceRepo().calculate_exp("3 months")
+            0.25
+        """
+        year = ""
+        yr = r"\d+[ ]?yr"
+        yrf = r"\d+[ ]?year"
+        mh = r"\d+[ ]?mo"
+        mhf = r"\d+[ ]?month"
+
+        print(f"total text: {text}")
+
+        exp = ""
+        s1 = re.findall(yr, text)
+        if len(s1):
+            year = "".join([i for i in s1[0] if i.isdigit()])
+            exp = year if year else "0"
+        else:
+            s2 = re.findall(yrf, text)
+            if len(s2):
+                year = "".join([i for i in s2[0] if i.isdigit()])
+                exp = year if year else "0"
+
+        s1 = re.findall(mh, text)
+        if len(s1):
+            month = "".join([i for i in s1[0] if i.isdigit()])
+            if exp == "":
+                exp = "0"
+            exp += "." + month if month else "0"
+        else:
+            s2 = re.findall(mhf, text)
+            if len(s2):
+                month = "".join([i for i in s2[0] if i.isdigit()])
+                if exp == "":
+                    exp = "0"
+                exp += "." + month if month else "0"
+
+        # Convert years and months to a floating-point number
+        try:
+            years = float(exp.split(".")[0])
+        except ValueError:
+            years = 0
+
+        # Check if there is a dot ('.') in exp before attempting to split
+        try:
+            months = float(exp.split(".")[1]) if "." in exp else 0
+        except ValueError:
+            months = 0
+
+        total_exp = round(years + (months / 12), 2)
+
+        return total_exp
+    
+
+print(calculate_exp("8 years 9 months"))

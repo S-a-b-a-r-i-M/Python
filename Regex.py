@@ -117,7 +117,7 @@ print(is_valid_mail("@gmailcom"))'''
 ################################
 ### EXTRACTING NAME FROM URL ###
 ################################
-urls = [
+'''urls = [
     "",
     "https://www.bmwmotorcycles.com/en/public-pool/cont...",
     "https://www.billjacobsbmw.com/",
@@ -136,4 +136,39 @@ for url in urls:
     if match:
         business_names.append(match.group(0))
 
-print(business_names)
+print(business_names)'''
+
+
+# EXTRACTING FLOAT NUMBERS FROM STRING
+
+def extract_decimal_numbers(text) -> float:
+    """
+    Try to convert the entire string to a float directly
+    Use a pre-compiled regex pattern for efficiency
+    If a match is found, return the extracted decimal number as a float
+    If no match is found, return 0.0
+    """
+    text = text.strip()
+    # Try to convert the entire string to a float directly
+    try:
+        if text:
+            return float(text)
+    except ValueError:
+        pattern = re.compile(r'\b(\d+\.\d+)\b')
+        match = pattern.search(text)
+        if match:
+            return float(match.group(1))
+        else:
+            pattern = re.compile(r'\b(\d+)')
+            match = pattern.search(text)
+            if match:
+                return float(match.group(1))
+            
+    return 0.0
+
+print(extract_decimal_numbers('6 years'))
+print(extract_decimal_numbers('6.5 years'))
+print(extract_decimal_numbers(' 0.11 years'))
+print(extract_decimal_numbers('2.6 years'))
+print(extract_decimal_numbers(''))
+print(extract_decimal_numbers('years'))
