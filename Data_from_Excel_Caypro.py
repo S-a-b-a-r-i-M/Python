@@ -10,7 +10,7 @@ import re
 
 user_id = 59
 company_id = 14
-data_store = 23
+data_store = 23 # need to check these values
 
 workbook = openpyxl.load_workbook(filename="Caypro_filter_details.xlsx", read_only=True, data_only=True)
 
@@ -53,7 +53,7 @@ def crete_jds(conn, jd_names: List[str]):
                     0, -- offset
                     0, -- total
                     {user_id}, -- user_id (assuming you have a separate table for users)
-                    '', -- assign_to_id
+                    '{user_id}', -- assign_to_id
                     'not_started', -- cv_scraping_status
                     'N', -- is_scraping_complete_check
                     NULL, -- cvs_last_fetch_time
@@ -72,7 +72,7 @@ def crete_jds(conn, jd_names: List[str]):
             # crete record on jds assignee
             sql = f"""
                 INSERT INTO t_jds_assign(jd_id, assignee_id, assignor_id, is_unassigned, created_at, updated_at, status)
-                       VALUES ({jd_id}, 2, 2, 0, '2024-06-12 12:00:00+00', '2024-06-12 12:00:00+00', 1)
+                       VALUES ({jd_id}, {user_id}, {user_id}, 0, '2024-06-12 12:00:00+00', '2024-06-12 12:00:00+00', 1)
             """
             cursor.execute(sql)
 
@@ -420,7 +420,7 @@ if __name__=="__main__":
     conn.commit()
     conn.close()
     print("\nsuccessfully completed, without errors!!!!!!")
-
+   
 
 """
 SELECT * FROM t_jds WHERE jd_id > 807 ORDER BY jd_id DESC
@@ -448,5 +448,4 @@ DELETE FROM t_candidate_sources WHERE id > 35606
 DELETE FROM t_candidate_cvs WHERE cid > 37232
 DELETE FROM t_jds_assign WHERE id > 968
 DELETE FROM t_jds WHERE jd_id > 807
-"""      
-
+"""   
