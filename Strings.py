@@ -54,6 +54,7 @@ name.isdigit()
 '''
 
 #SLICING
+'''
 print("------STRING SLICING------")
 # @  h  i  r  e  1  0  x
 # 0  1  2  3  4  5  6  7
@@ -68,6 +69,13 @@ print(cmp_name[-8:])
 print(cmp_name[0:8:2]) #[stat:end-1:step]
 # print(cmp_name[15]) # GIVING OUT OF RANGE INDEX (IndexError)
 print("reverse :",cmp_name[8::-2]) #IT DECREMENT -1 FROM 8 EACH TIME
+'''
 
+value = "2 months"
+periods = ["months", "weeks", "days", "month", "week", "day"]
+if "month" in value.lower():
+   print(value)
+else:
+   print("not found")
 
 

@@ -1,5 +1,5 @@
 class Distance:
-  def __init__(self, value):
+  def __init__(self, value=0):
     self._km = value
 
   @property
@@ -25,7 +25,7 @@ class Distance:
 
 distance = Distance(10)
 print(distance.kilometers) # Accessing a method like a attribute of the class
-print(f"{distance.kilometers} is equal to {distance.meters} meters")
+print(f"{distance.kilometers} km is equal to {distance.meters} meters")
 distance.meters = 2000
 print(distance.kilometers)
 

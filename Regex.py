@@ -140,7 +140,7 @@ print(business_names)'''
 
 
 # EXTRACTING FLOAT NUMBERS FROM STRING
-
+'''
 def extract_decimal_numbers(text) -> float:
     """
     Try to convert the entire string to a float directly
@@ -172,3 +172,11 @@ print(extract_decimal_numbers(' 0.11 years'))
 print(extract_decimal_numbers('2.6 years'))
 print(extract_decimal_numbers(''))
 print(extract_decimal_numbers('years'))
+'''
+
+text = "na"
+res = re.search(r"(months?|weeks?|days?)", text)
+if re.search(r"(months?|weeks?|days?|n/?a|no|nil)", text.lower()):
+    print("passed")
+
+print(res)

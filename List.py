@@ -1,9 +1,8 @@
 #LIST
-'''
 names=["sabari","arasu","tamil","george","ureka"]
 ages=[21,20,21,24,25]
 hetro=['a',97,'z',122,'A',65,"Z",91,9.01,False]
-
+'''
 print(names,"\n",ages)
 print(type(names))
 #ITERATE ALL ELEMENTS
@@ -38,6 +37,7 @@ print("first 3 naems and 3 ages",names[:3],ages[:3])
 '''
 
 #LIST OPERATION
+"""
 print("--------- LIST OPERATION ---------")
 cs=["tamil","eng","maths","cs","phy","che"]
 bio=["tamil","eng","maths","bio","phy","che"]
@@ -65,8 +65,11 @@ for i in range(len(subjects)):  #ITERATION
 
 subjects[2].append('bus_maths')
 print("2D list:",subjects[2],"1D list:",com)
-
+"""
 #IF WE WANT TO COPY 2D LIST WE HAVE TO USE DEEP COPY
 
 
-#TUPLE
+# MAP 
+# WE CAN EASILY REPLACE THE map AND filter FUNCTIONS BY LIST COMPREHENSION
+incremented_ages = list(map(lambda x: x+1,ages))
+print(incremented_ages)
