@@ -1,9 +1,42 @@
+import json
 import re
 from typing import Dict, List
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 
+################################################################################################################################
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import SystemMessage, HumanMessage
+from pydantic import BaseModel, Field
+
+model = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash-8b",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+    google_api_key="AIzaSyBaNsFmCO9nEXqsi1C_4YYeIh1q_VpnSEw"
+) 
+system_prompt = "Your task is to extract the data from the user text. Donot make up anything any information.If any field is not available return empty string"
+prompt = [SystemMessage(content=system_prompt)]
+
+class JdData(BaseModel):
+    years_of_experience: str = Field(description="Years of experience required for the job.")
+    location: str = Field(description="The job location. If remote just say `remote`")
+    skills: str = Field(description="The skills required for the job,exactly as mentioned in the text by user itself.This can be a larger text also depending upon user text.")
+    company_name: str = Field(description="The name of the company as mentioned in the text.")
+    visa_type: str =Field(description="The type of work visa , ex: l2, h4, C2C, w2, gc, H1, opt, cpt,etc ")
+    job_role: str =Field(description="Job designation/job role/job title.")
+
+def get_structured_data(text: str) -> JdData:
+    structured_model= model.with_structured_output(JdData)
+    list_of_text = [text[i:i+2000] for i in range(0, len(text), 2000)]
+    for i,chunk in enumerate(list_of_text):
+        struct_data=structured_model.invoke(prompt + [HumanMessage(content=chunk if i==0 else str(struct_data)+chunk)])
+    return struct_data 
+
+################################################################################################################################
 
 def matches_career_pattern(url: str) -> bool:
         """Check if URL matches the careers/jobs pattern."""
@@ -52,6 +85,7 @@ def extract_iframe_urls(soup: BeautifulSoup, base_url: str = None) -> List[Dict[
     except Exception as e:
         print(f"Error processing iframes: {str(e)}")
         return []
+
 
 def job_post_links(career_page_url: str) -> list[str]:
   """
@@ -138,7 +172,7 @@ def extract_job_description(jd_url: str) -> str:
         # Search for specific elements
         potential_ids = ['job__description', 'job_description', 'job-description', 'job_details', 
                          'job-details', 'jobDisplay', 'overview', 'job', 'main-content', 'description', 
-                         'content', 'careers']
+                         'content', 'careers'] # "job_summary"
         for tag in potential_ids:
             # Search for elements with id or class containing the potential id
             elements = soup.find_all(['div', 'section', 'main'], id=re.compile(tag, re.I))[:5] # take first five
@@ -156,9 +190,6 @@ def extract_job_description(jd_url: str) -> str:
               text = nested_html.body.get_text(strip=True, separator='\n')
               if is_description_valid(text):
                 return text
-              
-        # search the available iframes
-        
         
         # If nothing is found, return the whole body content
         return soup.body.get_text(strip=True, separator='\n') if soup.body and is_description_valid(text) else ""
@@ -174,10 +205,10 @@ marqeta = "https://www.marqeta.com/company/careers/all-jobs" # fetch jd link is 
 acuitybrands = "https://careers.acuitybrands.com/search/?createNewAlert=false&q=atrius&locationsearch=&optionsFacetsDD_department=&optionsFacetsDD_location=&optionsFacetsDD_title=&optionsFacetsDD_customfield5="
 workable = "https://apply.workable.com/xqthesuperschoolproject/?lng=en" # jd link is not-working
 freshworks = "https://careers.smartrecruiters.com/Freshworks" # working fine
-zoho = "https://www.zoho.com/careers/#jobs" # fetch jd link is not-working
+zoho = "https://www.zoho.com/careers/#jobs" # fetch jd link is not-working # lazy loading
 deloitte = "https://jobsindia.deloitte.com/search/?createNewAlert=false&q=&locationsearch=&optionsFeacetsDD_city=&optionsFacetsDD_customfield2=" # working fine
 cisco = "https://jobs.cisco.com/jobs/SearchJobs/?3_19_3=%5B%22162%22%2C%22163%22%2C%22%22%5D&3_12_3=%5B%22194%22%2C%22187%22%2C%22191%22%2C%2255816092%22%2C%22197%22%5D&source=Cisco+Jobs+Career+Site&tags=CDC+Prof+engineering+software&projectOffset=0" # working fine
-hcl = "https://www.hcltech.com/engineering/job-opening" # having pagination # while fetching job description throwing HTTPSConnectionPool(host='www.hcltech.com', port=443): Read timed out
+# hcl = "https://www.hcltech.com/engineering/job-opening" # having pagination # while fetching job description throwing HTTPSConnectionPool(host='www.hcltech.com', port=443): Read timed out
 cts = "https://careers.cognizant.com/india-en/jobs/#results" # having pagination # working fine
 
 
@@ -194,8 +225,8 @@ breezy = "https://breezy.band/careers/" # not working # js Script
 appsmith = "https://www.appsmith.com/careers#open-roles" # working fine
 automatic = "https://automattic.com/work-with-us/#open-positions" # not working # js Script
 """
- 
-for career_url in [roofstock, allganize, marqeta, acuitybrands, workable, freshworks, zoho, deloitte, cisco, hcl, cts]:
+
+for career_url in [roofstock]:
   links = job_post_links(career_url)
   with open("job_links.txt", "a", encoding="utf-8") as file:
     file.write(f"{career_url} ----------------------->\n{links}\n\n\n\n")
@@ -203,7 +234,16 @@ for career_url in [roofstock, allganize, marqeta, acuitybrands, workable, freshw
   for link in links:
     content = extract_job_description(link)
     print(content[:50], "\ntotal length:", len(content), "\nlink:", link, "\n\n")
+    jd_data: JdData  = get_structured_data(content)
 
-    with open(f"{career_url[9:18]}.txt", "a", encoding="utf-8") as file:
-      file.write(f"{link} ----------------------->\n{content}\n\n\n")
+    with open("jd_data.jsonl", "a") as file:
+      file.write(json.dumps(jd_data.model_dump()))
 
+
+
+"""
+Not Wokable Cases:
+ 1. loading from js script
+ 2. lazy loading
+ 3. requires authentication
+"""
