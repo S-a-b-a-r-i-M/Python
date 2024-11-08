@@ -3,13 +3,14 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from pydantic import BaseModel, Field
 import json
 
+
 # model = ChatGoogleGenerativeAI(
 #     model="gemini-1.5-flash-8b",
 #     temperature=0,
 #     max_tokens=None,
 #     timeout=None,
 #     max_retries=2,
-#     google_api_key="AIzaSyBaNsFmCO9nEXqsi1C_4YYeIh1q_VpnSEw"
+#     google_api_key="" # at .env
 # ) 
 # system_prompt = "Your task is to extract the data from the user text. Donot make up anything any information.If any field is not available return empty string"
 # prompt = [SystemMessage(content=system_prompt)]
@@ -51,7 +52,7 @@ class AIHelper:
             max_tokens=None,
             timeout=None,
             max_retries=2,
-            google_api_key="AIzaSyBaNsFmCO9nEXqsi1C_4YYeIh1q_VpnSEw"
+            google_api_key=""
         )
 
     def get_structured_jd_data(self, text: str) -> JdData:

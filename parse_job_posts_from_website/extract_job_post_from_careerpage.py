@@ -16,7 +16,7 @@ model = ChatGoogleGenerativeAI(
     max_tokens=None,
     timeout=None,
     max_retries=2,
-    google_api_key="AIzaSyBaNsFmCO9nEXqsi1C_4YYeIh1q_VpnSEw"
+    google_api_key="" # .env
 ) 
 system_prompt = "Your task is to extract the data from the user text. Donot make up anything any information.If any field is not available return empty string"
 prompt = [SystemMessage(content=system_prompt)]
