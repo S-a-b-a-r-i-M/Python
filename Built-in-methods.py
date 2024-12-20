@@ -14,7 +14,20 @@ text = "ugadhi!!!"
 print("checking is any non-alpha char present in text", end=" , ")
 print(any(not ch.isalnum() for ch in text))
 
+values = {"m":7, "jd_id": 1}
+validation_rules = {
+    "JD": {
+        "required_fields": ["jd_id","m"],
+        "error_message": "JD id should not be empty"
+    },
+}
+print(any(
+    not values.get(field, False)
+    for field in validation_rules["JD"]["required_fields"]
+))
 
+
+"""
 class CustomException(Exception):
     def __init__(self, msg):
         print("Exception occured:", msg)
@@ -29,3 +42,4 @@ if not any(ch.isnumeric() for ch in password):
     raise CustomException("password should contain numeric value")
 
 print("password accepted")
+"""
