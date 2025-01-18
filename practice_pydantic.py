@@ -4,7 +4,7 @@ import hashlib
 from typing import Any
 
 import orjson
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 '''
 class ChannelTypes(StrEnum):
@@ -85,6 +85,7 @@ SubscribedNotifyModel(**{'channel': b'activity', 'data': b'{"jd_id": 1}'})
 
 
 #######################################################################################
+"""
 def unique_id(name, account_url, company_id):  # FIXME: Add the proper unique id
     return hashlib.md5(
         f"{name}/{account_url},{company_id}".encode(),
@@ -95,3 +96,40 @@ print(unique_id("sabari", "", 1))
 print(unique_id("sabari", "fsdfasfsdf123", 1))
 print(unique_id("sabari", "", 1))
 print(unique_id("sabari", "fsdfasfsdf123", 1))
+"""
+
+class EducationModel(BaseModel):
+    degree: str | None = Field(None, max_length=255)
+    college_name: str | None = Field(None, max_length=255)
+    grad_year: int | None = Field(None, description="graduation year")
+    from_date: datetime | None = None
+    to_date: datetime | None = None
+
+    @computed_field(return_type=str)
+    def unique_id(self):
+        return hashlib.md5(
+            f"{self.college_name}:{self.degree}/{self.grad_year}".encode(),
+            usedforsecurity=False,
+        ).hexdigest()
+
+    @field_validator("from_date", "to_date", mode="before")
+    def validate_dates(cls, v):
+        try:
+            if v and isinstance(v, str):
+                v = datetime.strptime(v, "%d-%b-%Y")
+        except ValueError:
+            print(f"Invalid date format - {v}")
+            raise ValueError(f"Invalid date format - {v}. valid format example 01-Jan-2020")
+
+        return v
+
+    # model config
+    model_config = ConfigDict(extra="allow")
+
+EducationModel(
+    degree="Bachelor of Technology (B.Tech.)",
+    college_name="Dr. A.P.J. Abdul Kalam Technical University",
+    grad_year=2014,
+    from_date="01-Jan-2014",
+    to_date="01-Jan-2018",
+)

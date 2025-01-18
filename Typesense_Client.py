@@ -122,6 +122,64 @@ def create_country_schema():
         return res
 
 
+def create_employee_request_collection():
+    schema ={
+        "name": "employee_request",
+        "fields": [
+            {
+                "name": "id",  # same as postgres table id int string
+                "type": "string",
+            },
+            {
+                "name": "jd_id",
+                "type": "string",
+                "index": False,
+            },
+            {
+                "name": "marketplace",
+                "type": "string",
+                "reference": "marketplace.id",
+            },
+            {
+                "name": "requesting_user_id",
+                "type": "int64",
+                "index": True,
+            },
+            {
+                "name": "requesting_company_id",
+                "type": "int32",
+                "index": True,
+            },
+            {
+                "name": "requesting_company_name",
+                "type": "string",
+                "index": True,
+            },
+            {
+                "name": "source_company_id",
+                "type": "int32",
+                "index": True,
+            },
+            {
+                "name": "status", # request status [PENDING, REJECTED, APPROVED]
+                "type": "string",
+                "index": True,
+                "sortable": True,
+            },
+            {
+                "name": "updated_at",
+                "type": "int64",
+            },
+            {
+                "name": "created_at",
+                "type": "int64",
+            },
+        ]
+    }       
+    res = typesense_client.collections.create(schema)
+    return res
+
+
 def get_candidate_fields() -> list[dict[str, Any]]:
     return [
         {
@@ -251,7 +309,6 @@ def get_candidate_fields() -> list[dict[str, Any]]:
 
 def create_candidate_collection(schema_name: str):
     fields = get_candidate_fields()
-    fields.append({ "name": "status", "type": "bool" })
     schema = {
         "name": f"{schema_name}",
         "enable_nested_fields": True,
@@ -300,6 +357,12 @@ def create_jd_collection(schema_name):
                 "type": "string",
                 "reference": "candidate1.id",
                 "optional": True,
+            },
+            {
+                "name": "marketplace",
+                "type": "string",
+                "reference": "marketplace.id",
+                "optional": True,
             }
         ],
     }
@@ -324,6 +387,10 @@ def create_marketplace_collection() :
                     "name": "current_status",
                     "type": "string",
                 },
+                {
+                    "name": "approved_company_ids",
+                    "type": "int32[]",
+                }
             ]
         )
         schema = {
@@ -408,6 +475,7 @@ def fetch_all_data(collection_name):
         search_parameters = {
             "q": "*",		
             "query_by": "",
+            "filter_by": "",
             "page": i,
             "per_page": 250,	
             "include_fields": "*",
@@ -418,16 +486,18 @@ def fetch_all_data(collection_name):
         datas.extend([i["document"] for i in data["hits"]])
         i += 1
             
-    print("old data", len(datas), datas[0])
+    print("old data", len(datas), datas)
 
 
 def fetch_all_data_from_jd_collection(collection_name, jd_id):
     datas = []
+    search = "" # employee name or requesting company name
+    search_query = f"&& $marketplace(name:{search}) || $candidate1(name:{search})" if search else ""
     search_parameters = {
         "q": "*",
         # Note: Reference searching is not working
         # "query_by": "$marketplace(name),$marketplace(email),$marketplace(phone),$marketplace(skills)",
-        "filter_by": f"jd_id:={jd_id} && is_ranked:=true",
+        # "filter_by": f"jd_id:={jd_id} && is_ranked:=true {search_query}",
         "include_fields": "$marketplace(*),$candidate1(*)",
         "page": 1,
         "per_page": 10,
@@ -438,10 +508,32 @@ def fetch_all_data_from_jd_collection(collection_name, jd_id):
     data = typesense_client.collections[collection_name].documents.search(search_parameters)			
     datas.extend([i["document"] for i in data["hits"]])
 
+    print("data", len(datas), datas[0])
+
+
+def fetch_all_data_from_employee_request():
+    datas = []
+    search = "John" # employee name or requesting company name
+    search_query = f"$marketplace(name:{search}) || requesting_company_name:{search}"
+    search_parameters = {
+        "q": "*",
+        # Note: Reference query_by searching is not working
+        # "query_by": "$marketplace(name),$marketplace(email),$marketplace(phone),$marketplace(skills)",
+        # "filter_by": f"source_company_id:={1} && status:={'PENDING'} && ({search_query})",
+        # "include_fields": "$marketplace(*)",
+        "page": 1,
+        "per_page": 10,
+        "prefix": False,
+        "exclude_fields": "$marketplace(embedding)",
+        "sort_by": "created_at:desc"
+    }
+    data = typesense_client.collections["employee_request"].documents.search(search_parameters)			
+    datas.extend([i["document"] for i in data["hits"]])
+
     print("data", len(datas), datas)
 
 
-def import_jsonl_file_to_collection(collection_name):
+def import_jsonl_file_to_collection(collection_name, file_name):
     """
     Imports data from a JSONL file into a specified Typesense collection.
 
@@ -452,7 +544,7 @@ def import_jsonl_file_to_collection(collection_name):
         dict: A response from the Typesense server indicating the result of the import operation.
     """
     res = None
-    with open("jd_mappping.jsonl") as jsonl:
+    with open(file_name) as jsonl:
         res = typesense_client.collections[collection_name].documents.import_(
              jsonl.read().encode('utf-8'), {"action": "create"}
         )
@@ -519,9 +611,50 @@ def import_jsonl_file_to_collection(collection_name):
 #         'is_ranked': True, 
 #         'jd_id': '4253550266886918144', 
 #         'marketplace': None, 
-#         'ranking_score': 15.4, 
+#         'ranking_score': 15.0, 
 #         'stage': 'SOURCED', 
 #         'status': 'QUALIFIED',
 #         'candidate': '4258862607581057024'
 #     }
 # )
+
+# create_document(
+#     collection_name="jd0",
+#     document={
+#         'id': '1002', 
+#         'is_ranked': True, 
+#         'jd_id': '4253550266886918144', 
+#         'marketplace': '4258862608352808960', 
+#         'ranking_score': 15.4, 
+#         'stage': 'SOURCED', 
+#         'status': 'QUALIFIED',
+#         'candidate': None
+#     }
+# )
+
+# create_document(
+#     collection_name="employee_request",
+#     document={
+#         'id': '1', 
+#         'jd_id': '4243205049994448896', 
+#         'marketplace': '4283336314311413760', 
+#         'requesting_user_id': 3912326645730512897, 
+#         'requesting_company_id': 2, 
+#         'requesting_company_name': "Test Company",
+#         'source_company_id': 1,
+#         'updated_at': int(datetime.now().timestamp()),
+#         'created_at': int(datetime.now().timestamp()),
+#         'status': 'PENDING',
+#     }
+# )
+
+# request_ids = ['1', '2']
+# data = {"status": "APPROVED", "updated_at": int(datetime.now().timestamp())}
+# filter_by = f"id:[{",".join(request_ids)}]"
+# update_count = typesense_client.collections["employee_request"].documents.update(
+#     data, {"filter_by": {filter_by}}
+# ).get("num_updated", 0)
+
+# print(update_count)
+# fetch_all_data_from_employee_request()
+# fetch_all_data_from_jd_collection("jd0", "")
