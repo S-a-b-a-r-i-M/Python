@@ -27,7 +27,7 @@ class TypesenseClient:
                     {
                         "host": os.getenv("TYPESENSE_HOST"),
                         "port": os.getenv("TYPESENSE_PORT"),
-                        "protocol": "https",
+                        "protocol": "http",
                     }
                 ],
                 "api_key": os.getenv("TYPESENSE_API_KEY"),
@@ -380,6 +380,10 @@ def create_marketplace_collection() :
                     "type": "int32",
                 },
                 {
+                    "name": "company_name",
+                    "type": "string",
+                },
+                {
                     "name": "visibility",
                     "type": "string",
                 },
@@ -387,9 +391,16 @@ def create_marketplace_collection() :
                     "name": "current_status",
                     "type": "string",
                 },
+                # request details
                 {
-                    "name": "approved_company_ids",
-                    "type": "int32[]",
+                    "name": "requests.jd_id",
+                    "type": "string[]",
+                    "optional": True,
+                },
+                {
+                    "name": "requests.status",
+                    "type": "string[]",
+                    "optional": True,
                 }
             ]
         )
@@ -455,6 +466,7 @@ def retrieve_collection(collection_name):
     Returns:
         dict: A dictionary containing details about the specified collection.
     """
+    print("fetching.....")
     return typesense_client.collections[collection_name].retrieve()
 
 
@@ -475,7 +487,7 @@ def fetch_all_data(collection_name):
         search_parameters = {
             "q": "*",		
             "query_by": "",
-            "filter_by": "",
+            "filter_by": "id:=4258862608352808960",
             "page": i,
             "per_page": 250,	
             "include_fields": "*",
@@ -485,19 +497,16 @@ def fetch_all_data(collection_name):
         is_data_present = bool(len(data["hits"]))
         datas.extend([i["document"] for i in data["hits"]])
         i += 1
-            
-    print("old data", len(datas), datas)
 
+    print("found data:", len(datas), datas[0])
 
 def fetch_all_data_from_jd_collection(collection_name, jd_id):
     datas = []
-    search = "" # employee name or requesting company name
+    search = "Ashok" # employee name or requesting company name
     search_query = f"&& $marketplace(name:{search}) || $candidate1(name:{search})" if search else ""
     search_parameters = {
         "q": "*",
-        # Note: Reference searching is not working
-        # "query_by": "$marketplace(name),$marketplace(email),$marketplace(phone),$marketplace(skills)",
-        # "filter_by": f"jd_id:={jd_id} && is_ranked:=true {search_query}",
+        # "filter_by": f"jd_id:={jd_id} && stage:={"sourced"} {search_query}",
         "include_fields": "$marketplace(*),$candidate1(*)",
         "page": 1,
         "per_page": 10,
@@ -518,9 +527,8 @@ def fetch_all_data_from_employee_request():
     search_parameters = {
         "q": "*",
         # Note: Reference query_by searching is not working
-        # "query_by": "$marketplace(name),$marketplace(email),$marketplace(phone),$marketplace(skills)",
         # "filter_by": f"source_company_id:={1} && status:={'PENDING'} && ({search_query})",
-        # "include_fields": "$marketplace(*)",
+        "include_fields": "$marketplace(*)",
         "page": 1,
         "per_page": 10,
         "prefix": False,
@@ -557,8 +565,8 @@ def import_jsonl_file_to_collection(collection_name, file_name):
 # create_document(
 #     collection_name="marketplace",
 #     document={
-#     "work_type": "Full Time",
-#     "company_id": 1,
+#     "work_type": "Full_Time",
+#     "company_id": 99,
 #     "id": "4258862608352808960",
 #     "educations": [
 #         {
@@ -597,10 +605,16 @@ def import_jsonl_file_to_collection(collection_name, file_name):
 #     "source": [
 #         "LINKEDIN"
 #     ],
-#     "total_experience": 13.33,
+#     "total_experience": 13.00,
 #     "updated_at": 1736383198,
-#     "visibility": "public",
-#     "current_status": "active"
+#     "visibility": "PUBLIC",
+#     "current_status": "ACTIVE",
+#     "requests":[
+#         {
+#             "company_id": 1,
+#             "status": "PENDING"
+#         }
+#     ]
 #     }
 # )
 
@@ -624,7 +638,7 @@ def import_jsonl_file_to_collection(collection_name, file_name):
 #         'id': '1002', 
 #         'is_ranked': True, 
 #         'jd_id': '4253550266886918144', 
-#         'marketplace': '4258862608352808960', 
+#         'marketplace': '4295020289387925504', 
 #         'ranking_score': 15.4, 
 #         'stage': 'SOURCED', 
 #         'status': 'QUALIFIED',
@@ -657,4 +671,47 @@ def import_jsonl_file_to_collection(collection_name, file_name):
 
 # print(update_count)
 # fetch_all_data_from_employee_request()
-# fetch_all_data_from_jd_collection("jd0", "")
+
+def bulk_update_or_create_marketplace_candidates_requests(data_list: list[dict[str, Any]]) -> int:
+    """
+    updates: list of dicts with keys 'id', 'jd_id', 'status'
+    returns: number of successful updates
+    """
+    update_requests = []
+    data_dict = {
+        str(data["id"]): data
+        for data in data_list
+    }
+    typesense_data = typesense_client.collections["marketplace"].documents.search({
+        "q":  "*",
+        "filter_by": f"id:[{",".join(data_dict.keys())}]",
+        "per_page": len(data_dict),
+    })
+    # extract only the actual data
+    documents: list[dict[str, Any]] = [i["document"] for i in typesense_data["hits"]]
+    for doc in documents:
+        update_data = data_dict[doc["id"]]
+        requests: list = doc.get("requests", [])
+        for request in requests:
+            # If exists update
+            if update_data["jd_id"]==request["jd_id"]:
+                request["status"] = update_data["status"]
+                break
+        else: # Add new
+            requests.append({
+                "jd_id": update_data["jd_id"],
+                "status": update_data["status"]
+            })
+        update_requests.append({
+            "id": doc["id"],
+            "requests": requests
+        })
+
+    result: list = typesense_client.collections["marketplace"].documents.import_(
+        update_requests, {"action": "emplace"}
+    )
+
+    return len(result)
+
+
+print(fetch_all_data("candidate1"))

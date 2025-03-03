@@ -126,10 +126,12 @@ class EducationModel(BaseModel):
     # model config
     model_config = ConfigDict(extra="allow")
 
-EducationModel(
-    degree="Bachelor of Technology (B.Tech.)",
-    college_name="Dr. A.P.J. Abdul Kalam Technical University",
-    grad_year=2014,
-    from_date="01-Jan-2014",
-    to_date="01-Jan-2018",
-)
+# EducationModel(
+#     degree="Bachelor of Technology (B.Tech.)",
+#     college_name="Dr. A.P.J. Abdul Kalam Technical University",
+#     grad_year=2014,
+#     from_date="01-Jan-2014",
+#     to_date="01-Jan-2018",
+# )
+
+print(EducationModel.model_fields, "\n\n")
