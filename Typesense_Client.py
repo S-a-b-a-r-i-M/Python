@@ -3,6 +3,7 @@ import json
 from typing import Any
 from dotenv import load_dotenv
 
+import requests
 import typesense
 from typesense import Client
 
@@ -417,6 +418,11 @@ def create_document(collection_name, document):
     return typesense_client.collections[collection_name].documents.create(document)
 
 
+def create_country_json_file():
+    response = requests.get("https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/refs/heads/master/json/countries%2Bstates%2Bcities.json")
+    with open("/home/new/PROGRAMMING_GROUND/Python/contries.json", "w") as f:
+        f.write(response.text)
+
 def convert_json_to_jsonl():
     # open copuntries json file 
     data = []
@@ -427,12 +433,12 @@ def convert_json_to_jsonl():
     data_list = json.loads(contetnt)
 
     # write into jsonl file
-    with open("/home/new/PROGRAMMING_GROUND/Python/contries2.jsonl", "w") as f:
+    with open("/home/new/PROGRAMMING_GROUND/Python/contries.jsonl", "w") as f:
         for data in data_list:
             flattened = {
                 "country_name": data["name"],
                 "iso2": data["iso2"],
-                "phone_code": data["phone_code"],
+                "phone_code": data["phonecode"],
                 "emoji": data["emoji"],
             }
             for state in data["states"]:
@@ -714,4 +720,4 @@ def bulk_update_or_create_marketplace_candidates_requests(data_list: list[dict[s
     return len(result)
 
 
-print(fetch_all_data("candidate1"))
+convert_json_to_jsonl()

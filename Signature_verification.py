@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import hmac
 from datetime import datetime, timedelta
@@ -7,7 +8,7 @@ import secrets
 # Generate a strong random key (32 bytes = 256 bits)
 SIGNED_HEADER_SECRET_KEY = "a98ba8ac55eb5d15bafb731dd6641c067351cf327867e442ea70986b0b01beb3"
 
-def create_signature(user_id: int, role: str, expiry_minutes: int = 60):
+def generate_signature(user_id: int, role: str, expiry_minutes: int = 60):
     """
     Generate a signed signature for authentication headers.
     
@@ -30,15 +31,16 @@ def create_signature(user_id: int, role: str, expiry_minutes: int = 60):
         message.encode(),
         hashlib.sha256
     ).hexdigest()
-
-    return f"{expiry_str}|{signature}"
+    sig = f"{expiry_str}|{signature}"
+    return base64.b64encode(sig.encode()).decode()
     
 
 def verify_signature(signature: str, user_id: str, role: str) -> int:
     """Verify the signed signature from internal headers."""
     # Parse the signature header value
     try:
-        expiry_str, received_signature = signature.split("|")
+        decoded_signature = base64.b64decode(signature).decode()
+        expiry_str, received_signature = decoded_signature.split("|")
     except ValueError:
         print("Malformed signature header")
         return -1
@@ -60,11 +62,10 @@ def verify_signature(signature: str, user_id: str, role: str) -> int:
 
     return int(user_id)
 
+# print(verify_signature(
+#   "MjAyNS0wMy0wNlQxNzoyNjoxNi44MTM2ODZ8MTVjZGUyMmJjN2MzODIyZjBkNjc2YjQ1NDIwMjM0NWYwNDMzNTA3YTZkY2RhMjAwN2M0ZWE0YWU1NTEyMDRiYg==",
+#   1,
+#   "admin"
+# ))
 
-# print(create_signature(1, "admin"))
-
-print(verify_signature(
-  "2025-02-28T19:16:00.164342|9c51a78bdb33a860cab267aeb83d18710e0140bc2c151d3c7f26a5ec9ae8b697",
-  1,
-  "admin"
-))
+print(generate_signature(8, "admin"))
